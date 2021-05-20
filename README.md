@@ -6,35 +6,24 @@ This repository contains the author's implementation of ECCV 2018 paper "License
 
 * Paper webpage: http://sergiomsilva.com/pubs/alpr-unconstrained/
 
-If you use results produced by our code in any publication, please cite our paper:
-
-```
-@INPROCEEDINGS{silva2018a,
-  author={S. M. Silva and C. R. Jung}, 
-  booktitle={2018 European Conference on Computer Vision (ECCV)}, 
-  title={License Plate Detection and Recognition in Unconstrained Scenarios}, 
-  year={2018}, 
-  pages={580-596}, 
-  doi={10.1007/978-3-030-01258-8_36}, 
-  month={Sep},}
-```
-
 ## Requirements
 
-In order to easily run the code, you must have installed the Keras framework with TensorFlow backend. The Darknet framework is self-contained in the "darknet" folder and must be compiled before running the tests. To build Darknet just type "make" in "darknet" folder:
+* In order to easily run the code, you must have installed the Keras framework with TensorFlow backend. 
+* The Darknet framework is self-contained in the "darknet" folder and must be compiled before running the tests. To build Darknet just type "make" in "darknet" folder:
+* Go to alpr_unconstrained folder throgh your terminal and then use command
 
 ```shellscript
-$ cd darknet && make
+cd darknet && make
 ```
 
-**The current version was tested in an Ubuntu 16.04 machine, with Keras 2.2.4, TensorFlow 1.5.0, OpenCV 2.4.9, NumPy 1.14 and Python 2.7.**
+**The current version was tested in an Ubuntu 20.04 machine, with Keras 2.3.4, TensorFlow 2.4.1, OpenCV 4.5.1, NumPy 1.19.5 and Python 3.8.5**
 
 ## Download Models
 
 After building the Darknet framework, you must execute the "get-networks.sh" script. This will download all the trained models:
 
 ```shellscript
-$ bash get-networks.sh
+bash get-networks.sh
 ```
 
 ## Running a simple test
@@ -45,22 +34,47 @@ Use the script "run.sh" to run our ALPR approach. It requires 3 arguments:
 * __CSV file (-c):__ specify an output CSV file.
 
 ```shellscript
-$ bash get-networks.sh && bash run.sh -i samples/test -o /tmp/output -c /tmp/output/results.csv
+$ bash get-networks.sh && bash run.sh -i samples/test -o outputs -c outputs/results.csv
 ```
+*Note:* _Don't remove -i, -o, -c from the command just trace the path used and run the command
 
-## Training the LP detector
+## Above were the instructions for testing both Detector + OCR
 
-To train the LP detector network from scratch, or fine-tuning it for new samples, you can use the train-detector.py script. In folder samples/train-detector there are 3 annotated samples which are used just for demonstration purposes. To correctly reproduce our experiments, this folder must be filled with all the annotations provided in the training set, and their respective images transferred from the original datasets.
+# For only testing OCR of the above model  
+### Run plates_ocr.py
+#### In plates_ocr.py 
+  > The path of image folder is stored in imgs_paths.
 
-The following command can be used to train the network from scratch considering the data inside the train-detector folder:
+  > Lables.txt is opened for reading the actual labels by of each image that is obtained by command
+  ```shellscript
+   python data_processing.py
+   ```
+  In *data_processing.py* we have used the training set of *[UFPR-ALPR](https://web.inf.ufpr.br/vri/databases/ufpr-alpr/license-agreement/)* dataset for testing the robustness the OCR engine. 
+  * Just trace the path of input folders in specified files to run the OCR without distruptions.   
+  * UFPR-ALPR dataset(total 4500 images) is divided into 3 parts i.e. training (40% of images), tesing (40% of images), validation (20% of images.  
+  * Training set also contains the actual characters on license plate because of which we have used it for testing the accuracy of OCR engine.  
+  * comparision.txt is created for writing both the actual and predicted characters on the number plate. Which will help you to visualize the actual and predicted string at a same place side by side.
 
-```shellscript
-$ mkdir models
-$ python create-model.py eccv models/eccv-model-scracth
-$ python train-detector.py --model models/eccv-model-scracth --name my-trained-model --train-dir samples/train-detector --output-dir models/my-trained-model/ -op Adam -lr .001 -its 300000 -bs 64
-```
+  ## For testing the accuracy the accuracy of OCR on single lined plate (1440 images) use command
+  ```shellscript 
+  python license-plate-ocr_one_lined_plates.py
+  ```
+  ## Output
+  ```
+   > The average character level accuracy on 1440 one lined license plate images are about 96.4%.
 
-For fine-tunning, use your model with --model option.
+  > The plate level accuracy on 1400 one lined license plate images are about 78%.
+  ```
+  ## For testing the accuracy the accuracy of OCR on mixed (both single and double lined) license plate (1800 images) use command
+  ```shellscript 
+  python plates_ocr.py
+  ```
+  ## Output
+  ```
+  > The average character level accuracy on 1800 general license plate images are about 90.000%.
+  
+  > The plate level accuracy on 1800 general license plate images are about 64.0%.
+  ```
 
 ## A word on GPU and CPU
 
